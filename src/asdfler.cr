@@ -19,10 +19,13 @@ module Asdfler
       end
     end
 
+    define_version Asdfler::VERSION
     define_help description: "Entrypoint to asdfler for managing asdf plugins"
+
     register_sub_command install : Install, description: "Installs user-defined asdf plugins"
 
     def run
+      puts "Running version: #{version}"
       puts help
     end
   end
