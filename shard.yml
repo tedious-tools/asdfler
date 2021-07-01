@@ -1,0 +1,13 @@
+name: asdfler
+version: 0.1.0
+
+authors:
+  - Jon Anderson <8674577+lirossarvet@users.noreply.github.com>
+
+targets:
+  asdfler:
+    main: src/asdfler.cr
+
+crystal: 1.0.0
+
+license: MIT
