@@ -23,6 +23,16 @@ For non Intel MacOS folks (so...lots of people), unfortunately you have a little
 4. `shards build --release`
 5. `mv bin/asdfler <somewhere in your path like ~/bin>/asdfler`
 
+Bonus:
+
+`brew uninstall crystal` (or however you would remove the installed one) then add
+
+```yaml
+- name: crystal
+  default_version: 1.0.0
+```
+to your shiny new `.asdfler.yml` file and run `asdfler install` :D
+
 ## Usage
 
 Create a `.asdfler.yml` wherever, probably your home directory given this is not really per-project (that's what `.tool-versions` are for).
@@ -62,4 +72,4 @@ asdfler install
 
 ## Contributors
 
-- [Jon Anderson](https://github.com/your-github-user) - creator and maintainer
+- [lirossarvet](https://github.com/lirossarvet) - creator and maintainer
