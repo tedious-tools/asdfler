@@ -42,7 +42,7 @@ plugins:
 
 ```
 
-While in the home directory, run:
+While in the home directory or wherever you put the `.asdfler.yml` file, run:
 
 ```bash
 asdfler install
