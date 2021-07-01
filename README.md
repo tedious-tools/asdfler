@@ -42,6 +42,12 @@ plugins:
 
 ```
 
+While in the home directory, run:
+
+```bash
+asdfler install
+```
+
 ## Development
 
 `shards install` is all that should be necessary to get going.
