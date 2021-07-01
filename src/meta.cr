@@ -1,5 +1,5 @@
 module Asdfler
-  VERSION = "0.1.0"
+  VERSION = "0.2.0-dev"
 
   class AbortExecution < Exception
     getter status_code
