@@ -2,14 +2,16 @@ require "./definition"
 
 module Asdfler
   class Installer
-    FILEPATH = "./.asdfler.yml"
+    DEFAULT_FILEPATH = "./.asdfler.yml"
 
-    def initialize; end
+    getter filepath
+
+    def initialize(@filepath : String); end
 
     def install_plugins
       # Find asdfler file
       unless File.exists?(filepath)
-        Asdfler.error("No .asdfler.yml file found")
+        Asdfler.error("File #{filepath} not found")
         raise Asdfler::AbortExecution.new
       end
 
@@ -75,10 +77,6 @@ module Asdfler
           end
         end
       end
-    end
-
-    private def filepath
-      FILEPATH
     end
 
     private def asdf_path
