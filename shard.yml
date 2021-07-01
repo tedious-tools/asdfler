@@ -11,3 +11,8 @@ targets:
 crystal: 1.0.0
 
 license: MIT
+
+dependencies:
+  admiral:
+    github: jwaldrip/admiral.cr
+    version: 1.11.4
