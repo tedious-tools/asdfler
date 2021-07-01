@@ -10,7 +10,7 @@ I only have MacOS intel so that's all I can build on without setting up CI/CD. W
 
 If that is also you, you can:
 
-1. Go to [releases](./releases)
+1. Go to [releases](https://github.com/lirossarvet/asdfler/releases)
 2. Download the `asdfler-macos-intel` binary
 3. `sudo xattr -dr com.apple.quarantine ~/Downloads/asdfler-macos-intel`
 4. `mv ~/Downloads/asdfler-macos-intel <somewhere in your path like ~/bin>/asdfler`
