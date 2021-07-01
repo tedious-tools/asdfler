@@ -25,11 +25,26 @@ For non Intel MacOS folks (so...lots of people), unfortunately you have a little
 
 ## Usage
 
-TODO: Write usage instructions here
+Create a `.asdfler.yml` wherever, probably your home directory given this is not really per-project (that's what `.tool-versions` are for).
+
+```bash
+touch ~/.asdfler.yml
+```
+
+Open it and edit! Currently supported config:
+
+```yaml
+# top-level key
+plugins:
+  - name: ruby # Name of the plugin
+    default_version: 2.7.2 # Will install this version and run `asdf global ruby 2.7.2`
+  - name: golang # Just adds the golang asdf plugin
+
+```
 
 ## Development
 
-TODO: Write development instructions here
+`shards install` is all that should be necessary to get going.
 
 ## Contributing
 
