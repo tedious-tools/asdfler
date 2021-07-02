@@ -8,9 +8,8 @@ NOTE: SUPER UNTESTED AND THROWN TOGETHER IN A COUPLE OF HOURS. **Use at your own
 
 ### Homebrew
 
-```
+```bash
 brew install tedious-tools/formulae/asdfler
-
 ```
 
 ### Non-Homebrew
