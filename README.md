@@ -1,31 +1,25 @@
 # asdfler
 
-Manage which `asdf` plugins you have as well as default versions!
+Manage which [`asdf`](https://asdf-vm.com/#/core-manage-asdf) plugins you have as well as default versions!
 
 NOTE: SUPER UNTESTED AND THROWN TOGETHER IN A COUPLE OF HOURS. **Use at your own risk**
 
 ## Installation
 
-I only have MacOS intel so that's all I can build on without setting up CI/CD. Which I might do! Just...not now.
+### Homebrew
 
-If that is also you, you can:
+```
+brew install tedious-tools/formulae/asdfler
 
-1. Go to [releases](https://github.com/lirossarvet/asdfler/releases)
-2. Download the `asdfler-macos-intel` binary
-3. `sudo xattr -dr com.apple.quarantine ~/Downloads/asdfler-macos-intel`
-4. `mv ~/Downloads/asdfler-macos-intel <somewhere in your path like ~/bin>/asdfler`
+```
 
-For non Intel MacOS folks (so...lots of people), unfortunately you have a little bit of a chicken-and-egg scenario. Your best bet is probably:
+### Non-Homebrew
 
-1. Install Crystal compiler (e.g., `brew install crystal`)
+1. Install Crystal compiler
 2. `git clone https://github.com/lirossarvet/asdfler.git`
 3. `cd asdfler`
 4. `shards build --release`
 5. `mv bin/asdfler <somewhere in your path like ~/bin>/asdfler`
-
-Bonus:
-
-`brew uninstall crystal` (or however you would remove the installed one) then add
 
 ```yaml
 - name: crystal
@@ -49,13 +43,25 @@ plugins:
   - name: ruby # Name of the plugin
     default_version: 2.7.2 # Will install this version and run `asdf global ruby 2.7.2`
   - name: golang # Just adds the golang asdf plugin
-
 ```
 
 While in the home directory or wherever you put the `.asdfler.yml` file, run:
 
 ```bash
 asdfler install
+```
+
+You can also specify a path with the `-p` option. Any valid YAML parseable file of the
+provided structure works. Your versions must be strings. JSON, being a superset of YAML,
+will work as well:
+
+```json
+{
+  "plugins": [
+    {"name": "ruby", "default_version": "2.7.2"},
+    {"name": "golang"}
+  ]
+}
 ```
 
 ## Development
