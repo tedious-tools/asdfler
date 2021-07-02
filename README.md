@@ -63,6 +63,10 @@ will work as well:
 }
 ```
 
+```bash
+asdfler install -p my_versions.json
+```
+
 ## Development
 
 `shards install` is all that should be necessary to get going.
