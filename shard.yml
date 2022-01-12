@@ -2,13 +2,13 @@ name: asdfler
 version: 0.2.0
 
 authors:
-  - Jon Anderson <8674577+lirossarvet@users.noreply.github.com>
+  - Jon Anderson <coding@jpanderson.dev>
 
 targets:
   asdfler:
     main: src/asdfler.cr
 
-crystal: 1.0.0
+crystal: 1.3.0
 
 license: MIT
 

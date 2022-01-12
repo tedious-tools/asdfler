@@ -44,10 +44,10 @@ module Asdfler
           raise Asdfler::AbortExecution.new # Not sure I wanna bail this hard, we'll see
         end
 
-        version_to_install = plugin.default_version
+        versions_to_install = [plugin.default_version, *plugin.versions].compact
 
-        if version_to_install
-          Asdfler.info("#{context_str} installing and setting #{version_to_install} as global version")
+        versions_to_install.each do |version_to_install|
+          Asdfler.info("#{context_str} installing #{version_to_install}...")
 
           result = Asdfler.process_runner.run(
             command: asdf_path,
@@ -61,16 +61,18 @@ module Asdfler
           if result.success?
             Asdfler.info("#{context_str} version #{version_to_install} is available")
 
-            result = Asdfler.process_runner.run(
-              command: asdf_path,
-              args: ["global", plugin.name, version_to_install],
-              shell: true,
-            )
+            if version_to_install == plugin.default_version
+              result = Asdfler.process_runner.run(
+                command: asdf_path,
+                args: ["global", plugin.name, version_to_install],
+                shell: true,
+              )
 
-            if result.success?
-              Asdfler.info("#{context_str} Set ~/.tool-versions version to #{version_to_install}")
-            else
-              Asdfler.error("#{context_str} Unable to set ~/.tool-versions version")
+              if result.success?
+                Asdfler.info("#{context_str} Set ~/.tool-versions version to #{version_to_install}")
+              else
+                Asdfler.error("#{context_str} Unable to set ~/.tool-versions version")
+              end
             end
           else
             Asdfler.error("#{context_str} could not install version #{version_to_install}")
