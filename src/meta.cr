@@ -1,5 +1,5 @@
 module Asdfler
-  VERSION = "0.2.0"
+  VERSION = {{ `shards version`.chomp.stringify }}
 
   class AbortExecution < Exception
     getter status_code

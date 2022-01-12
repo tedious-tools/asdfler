@@ -84,7 +84,7 @@ module Asdfler
             Asdfler.error("#{context_str} could not install version #{version_to_install}\n#{mem}\n")
           end
         end
-      
+
         Asdfler.trace("")
         Asdfler.trace("")
       end
