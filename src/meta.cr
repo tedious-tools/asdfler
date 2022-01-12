@@ -13,11 +13,11 @@ module Asdfler
 
   class_property logger : Log = begin
     backend_with_formatter = Log::IOBackend.new(formatter: Asdfler::LogFormatter.new)
-    Log.setup(:debug, backend_with_formatter)
+    Log.setup(:trace, backend_with_formatter)
     Log.for("asdfler")
   end
 
-  {% for msg_type in %w(info debug error) %}
+  {% for msg_type in %w(trace info debug error) %}
     def self.{{msg_type.id}}(msg : String)
       Asdfler.logger.{{msg_type.id}} { msg }
     end

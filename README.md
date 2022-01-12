@@ -42,6 +42,17 @@ plugins:
   - name: ruby # Name of the plugin
     default_version: 2.7.2 # Will install this version and run `asdf global ruby 2.7.2`
   - name: golang # Just adds the golang asdf plugin
+  - name: crystal
+    versions: # Declare multiple versions for a language but no global default
+      - 1.2.1
+      - 1.3.0
+  - name: erlang
+    # The list of versions installed is the Union of the default version and any 
+    # versions listed.
+    default_version: 24.0.3
+    versions:
+      - 24.1.4
+
 ```
 
 While in the home directory or wherever you put the `.asdfler.yml` file, run:
