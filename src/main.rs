@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::vec::Vec;
 
 #[derive(Debug)]
-struct AsdflerConfig {
+struct Config {
     plugins: Vec<Plugin>,
 }
 
@@ -26,7 +26,7 @@ enum DefaultVersion {
 // }
 
 fn main() {
-    let config = AsdflerConfig {
+    let config = Config {
         plugins: vec![
             Plugin {
                 name: String::from("ruby"),
