@@ -1,4 +1,6 @@
 use std::collections::HashSet;
+use std::fs;
+use std::path::Path;
 use std::vec::Vec;
 
 use serde::Deserialize;
@@ -23,7 +25,10 @@ struct Plugin {
 fn main() {
     println!("Here we go!");
 
-    let config: Config = serde_yaml::from_str(&FAKE_FILE).unwrap();
+    let contents = fs::read_to_string(Path::new("./.asdfler.yml"))
+        .expect("Should have been able to read the file");
+
+    let config: Config = serde_yaml::from_str(&contents).unwrap();
 
     for plugin in config.plugins {
         let plugin_name = plugin.name;
@@ -43,19 +48,3 @@ fn main() {
         }
     }
 }
-
-const FAKE_FILE: &str = r#"
-plugins:
-  - name: ruby
-  - name: elixir
-    default_version: 1.14.2-otp-25
-  - name: rust
-    default_version: 1.68.0
-    versions:
-      - 1.62.1
-      - 1.61.0
-  - name: golang
-    versions:
-      - 1.20.2
-      - 1.19.7
-"#;
