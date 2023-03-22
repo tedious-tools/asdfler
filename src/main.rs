@@ -1,11 +1,16 @@
 use std::collections::HashSet;
-use std::fs;
+use std::io::Write;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Output};
 use std::str;
 use std::vec::Vec;
+use std::{fs, io};
 
+use anyhow::{anyhow, bail, Result};
+use clap::Parser;
 use serde::Deserialize;
+use tracing::metadata::LevelFilter;
+use tracing::{debug, error, info, warn};
 use which::which;
 
 const ASDF: &str = "asdf";
@@ -27,131 +32,162 @@ struct Plugin {
     versions: HashSet<String>,
 }
 
-fn main() {
-    println!("Here we go!");
+#[derive(Parser)]
+struct Args {
+    // Whether to print debug logs
+    #[arg(short, long)]
+    verbose: bool,
 
-    validate_asdf_exists();
+    #[arg(default_value_t = String::from("./.asdfler.yml"))]
+    filepath: String,
+}
 
-    let contents = fs::read_to_string(Path::new("./.asdfler.yml"))
-        .expect("Should have been able to read the file");
+fn start_logger(is_verbose: bool) {
+    let level = if is_verbose {
+        LevelFilter::DEBUG
+    } else {
+        LevelFilter::INFO
+    };
+    tracing_subscriber::fmt().with_max_level(level).init();
+}
 
-    let config: Config = serde_yaml::from_str(&contents).unwrap();
+// if main returns a Result<T, Error>, then it will exit with a non-zero status
+// code for the Err type and print the message.
+fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+    start_logger(args.verbose);
+
+    validate_asdf_exists()?;
+
+    // Confirm we have a valid filepath
+    let filepath = fs::canonicalize(&args.filepath)?;
+    let filepath = Path::new(&filepath);
+
+    if !filepath.exists() {
+        let a = &args.filepath;
+        let f = filepath.to_str().unwrap();
+        bail!("Unable to find {f} based on given path of {a}");
+    }
+
+    let contents = fs::read_to_string(Path::new(&args.filepath))?;
+
+    // By declaring the instance of the Config struct mutable, every field in it
+    // is also mutable, and any fields of contained structs.
+    //
+    // Also should more nicely handle the error of invalid YAML but...
+    let mut config: Config = serde_yaml::from_str(&contents)?;
+
+    // Magic! Not really. iter_mut() gives us a mutable reference to the plugin
+    // that we're iterating over. If the plugin has a default version, be sure
+    // it's added to the list of versions to install.
+    for plugin in config.plugins.iter_mut() {
+        if let Some(default_version) = &plugin.default_version {
+            plugin.versions.insert(default_version.clone());
+        }
+    }
 
     for plugin in config.plugins {
         let plugin_name = &plugin.name;
-        println!("\n\nNew plugin: {plugin_name}");
+        info!("=== New plugin: {plugin_name}");
 
-        let plugin_add_result = run_plugin_add(plugin_name);
-
-        match plugin_add_result {
-            // println! macro only takes str primitive literals, not Strings.
-            // So to get around that, we have it expand whatever we pass it, which
-            // happens to be a String.
-            Ok(msg) => println!("{}", msg),
+        match run_plugin_add(plugin_name) {
+            // debug! macro only takes str primitive literals, not Strings.
+            // So to get around that, we have it expand the msg String.
+            Ok(msg) => debug!("{msg}"),
             Err(msg) => {
-                println!("{}", msg);
-                println!("Skipping installing versions for `{plugin_name}");
+                warn!("{msg}");
+                warn!("Skipping installing versions for `{plugin_name}");
                 continue;
             }
         };
 
-        // There is likely a way to do this by making the struct mutable, but
-        // I'm not sure what it is and these sets are small enough that cloning
-        // is just easier to keep moving forward.
-        let mut versions_to_install = plugin.versions.clone();
-
-        // We need this to throw an unwrapped default into the hashset of versions
-        // and then to check again later for if we need to actaully set default version.
-        let default_for_later = plugin.default_version.clone();
-
-        if let Some(default_version) = plugin.default_version {
-            versions_to_install.insert(default_version);
-        }
-
-        if versions_to_install.is_empty() {
-            println!("=== No versions configured");
+        if plugin.versions.is_empty() {
+            info!("No versions configured");
             continue;
         } else {
-            for version in versions_to_install {
-                install_version(plugin_name, &version);
+            for version in plugin.versions {
+                if let Err(msg) = install_version(plugin_name, &version) {
+                    error!("{msg}");
+                    continue;
+                };
             }
         }
 
-        if let Some(default_version) = default_for_later {
+        if let Some(default_version) = plugin.default_version {
             set_default_version(plugin_name, &default_version);
         };
     }
+
+    Ok(())
 }
 
-fn validate_asdf_exists() {
+// Small wrapper around the which::which usage basically. Just ensures we have
+// the asdf executable.
+fn validate_asdf_exists() -> Result<()> {
     match which(ASDF) {
-        Ok(_) => println!("asdf available"),
+        Ok(_) => {
+            debug!("asdf available");
+            Ok(())
+        }
         Err(_) => {
-            println!("!!! asdf could not be found in path");
-            std::process::exit(1);
+            bail!("!!! asdf could not be found in path");
         }
     }
 }
 
-// This function returns a result, but! It still panics in some specific cases.
-// Namely, something very unexpected running theh plugin add command, like a segfault,
-// and if the command is terminated by a signal somehow.
-// This is probably a bad practice but for now I do not care.
-fn run_plugin_add(plugin_name: &str) -> Result<String, String> {
+// Actually adds the plugin to asdf.
+fn run_plugin_add(plugin_name: &str) -> anyhow::Result<String> {
     let output = Command::new(ASDF)
         .args(["plugin", "add", plugin_name])
-        .output()
-        .expect("!!! Something went very wrong");
+        .output()?;
 
     let status = output.status;
-    let code = status
-        .code()
-        .expect("!!! Unexpectedly terminated by signal");
+
+    if !status.code().is_some() {
+        bail!("No status code available");
+    }
+    let code = status.code().unwrap();
 
     match code {
         0 => Ok(format!("`{plugin_name}` successfully installed")),
         2 => Ok(format!("`{plugin_name}` is already installed")),
-        1 => Err(format!("`{plugin_name}` could not be installed")),
-        _ => Err(format!("Something went wrong adding `{plugin_name}")),
+        1 => Err(anyhow!("`{plugin_name}` could not be installed")),
+        _ => Err(anyhow!("Something went wrong adding `{plugin_name}")),
     }
 }
 
-fn install_version(plugin_name: &str, version: &String) {
-    println!("\n=== Starting installation of {version} for {plugin_name}");
-    // TODO: REMOVE THIS
-    if version == "do.not.install" {
-        println!("Unable to install version {version} for `{plugin_name}`");
-        return;
+// Installs a version of a plugin.
+fn install_version(plugin_name: &str, version: &String) -> anyhow::Result<()> {
+    info!("Starting installation of {version} for {plugin_name}");
+
+    match run_command(Command::new(ASDF).args(["install", plugin_name, version])) {
+        Ok(_) => {
+            info!("Looks like we installed version {version} of {plugin_name}!");
+            Ok(())
+        }
+        Err(_) => bail!("Unable to install {version} of {plugin_name}"),
     }
-
-    let output = Command::new(ASDF)
-        .args(["install", plugin_name, version])
-        .output()
-        .expect("!!! Something went very wrong");
-
-    let stdout = output.stdout;
-    println!("{}", str::from_utf8(&stdout).unwrap().trim());
-
-    let stderr = output.stderr;
-    let stderr = str::from_utf8(&stderr).unwrap().trim();
-
-    if !stderr.is_empty() {
-        println!("{}", stderr);
-    }
-
-    println!("=== Looks like we installed version {version} of {plugin_name}!");
 }
 
 fn set_default_version(plugin_name: &str, version: &String) {
-    println!("\n=== Setting default version of {plugin_name} to {version}");
+    let output = run_command(Command::new(ASDF).args(["global", plugin_name, version]));
 
-    let status = Command::new(ASDF)
-        .args(["global", plugin_name, version])
-        .status()
-        .expect("!!! Something went wrong setting the default version");
+    if output.is_err() {
+        error!("Unable to set default version");
+        return;
+    }
 
-    match status.success() {
-        true => println!("=== Successfully set {version} to default version for {plugin_name}"),
-        false => println!("=== Failed to set {version} to default version for {plugin_name}"),
+    match output.unwrap().status.success() {
+        true => info!("Successfully set {version} to default version for {plugin_name}"),
+        false => warn!("Failed to set {version} to default version for {plugin_name}"),
     };
+}
+
+fn run_command(cmd: &mut Command) -> anyhow::Result<Output> {
+    let output = cmd.output()?;
+    if !output.status.success() {
+        io::stdout().write_all(&output.stdout)?;
+        io::stderr().write_all(&output.stderr)?;
+    }
+    Ok(output)
 }
