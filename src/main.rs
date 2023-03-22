@@ -41,7 +41,7 @@ fn main() {
         let plugin_name = &plugin.name;
         println!("\n\nNew plugin: {plugin_name}");
 
-        let plugin_add_result = run_plugin_add(&plugin_name);
+        let plugin_add_result = run_plugin_add(plugin_name);
 
         match plugin_add_result {
             // println! macro only takes str primitive literals, not Strings.
@@ -73,12 +73,12 @@ fn main() {
             continue;
         } else {
             for version in versions_to_install {
-                install_version(&plugin_name, &version);
+                install_version(plugin_name, &version);
             }
         }
 
         if let Some(default_version) = default_for_later {
-            set_default_version(&plugin_name, &default_version);
+            set_default_version(plugin_name, &default_version);
         };
     }
 }
@@ -99,7 +99,7 @@ fn validate_asdf_exists() {
 // This is probably a bad practice but for now I do not care.
 fn run_plugin_add(plugin_name: &str) -> Result<String, String> {
     let output = Command::new(ASDF)
-        .args(["plugin", "add", &plugin_name])
+        .args(["plugin", "add", plugin_name])
         .output()
         .expect("!!! Something went very wrong");
 
@@ -125,7 +125,7 @@ fn install_version(plugin_name: &str, version: &String) {
     }
 
     let output = Command::new(ASDF)
-        .args(["install", &plugin_name, &version])
+        .args(["install", plugin_name, version])
         .output()
         .expect("!!! Something went very wrong");
 
@@ -135,7 +135,7 @@ fn install_version(plugin_name: &str, version: &String) {
     let stderr = output.stderr;
     let stderr = str::from_utf8(&stderr).unwrap().trim();
 
-    if stderr != "" {
+    if !stderr.is_empty() {
         println!("{}", stderr);
     }
 
@@ -146,7 +146,7 @@ fn set_default_version(plugin_name: &str, version: &String) {
     println!("\n=== Setting default version of {plugin_name} to {version}");
 
     let status = Command::new(ASDF)
-        .args(["global", &plugin_name, &version])
+        .args(["global", plugin_name, version])
         .status()
         .expect("!!! Something went wrong setting the default version");
 
