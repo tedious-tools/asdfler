@@ -143,7 +143,7 @@ fn run_plugin_add(plugin_name: &str) -> anyhow::Result<String> {
 
     let status = output.status;
 
-    if !status.code().is_some() {
+    if status.code().is_none() {
         bail!("No status code available");
     }
     let code = status.code().unwrap();
