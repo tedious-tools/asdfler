@@ -40,7 +40,7 @@ Open it and edit! Currently supported config:
 # top-level key
 plugins:
   - name: ruby # Name of the plugin
-    default_version: 2.7.2 # Will install this version and run `asdf global ruby 2.7.2`
+    default_version: 3.0.2 # Will install this version and run `asdf global ruby 3.0.2`
   - name: golang
     versions:
       - "1.20" # Note the quotes to ensure YAML sees this as a string
