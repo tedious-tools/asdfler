@@ -1,6 +1,6 @@
 [package]
 name = "asdfler"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["Jon Anderson <coding@jpanderson.dev>"]
 license = "MIT"
