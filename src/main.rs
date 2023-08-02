@@ -155,7 +155,7 @@ fn run_plugin_add(plugin_name: &str) -> anyhow::Result<String> {
         0 => Ok(format!("`{plugin_name}` successfully installed")),
         2 => Ok(format!("`{plugin_name}` is already installed")),
         1 => Err(anyhow!("`{plugin_name}` could not be installed")),
-        _ => Err(anyhow!("Something went wrong adding `{plugin_name}")),
+        _ => Err(anyhow!("Something went wrong adding `{plugin_name}`")),
     }
 }
 
